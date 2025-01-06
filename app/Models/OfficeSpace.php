@@ -40,6 +40,6 @@ class OfficeSpace extends Model
     }
 
     public function city(): BelongsTo{
-        return $this->belongsTo(Cities::class);
+        return $this->belongsTo(City::class);
     }
 }

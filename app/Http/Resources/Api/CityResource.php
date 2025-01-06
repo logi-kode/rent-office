@@ -17,9 +17,9 @@ class CityResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'slug' => $this->slug,
             'photo' => $this->photo,
-            'officeSpace_count' => $this->office_space_count,
+            'slug' => $this->slug,
+            'officeSpaces_count' => $this->office_spaces_count,
             'officeSpaces' => OfficeSpaceResource::collection($this->whenLoaded('officeSpaces'))
         ];
     }

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 
-class Cities extends Model
+class City extends Model
 {
     use HasFactory, SoftDeletes;
 
