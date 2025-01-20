@@ -13,7 +13,7 @@ Route::get('/user', function (Request $request) {
 Route::middleware('api-key')->group(function () {
     Route::get('/city/{city:slug}', [CityController::class, 'show']);
     Route::apiResource('/cities', CityController::class);
-    
+
     Route::get('/office/{officeSpace:slug}', [OfficeSpaceController::class, 'show']);
     Route::apiResource('/offices', OfficeSpaceController::class);
 
@@ -21,10 +21,3 @@ Route::middleware('api-key')->group(function () {
 
     Route::post('/check-booking', [BookingTransactionController::class, 'booking_details']);
 });
-
-
-
-
-
-// Route::post('/booking-transaction}', [BookingTransactionController::class, 'store']);
-// Route::post('/check-booking', BookingTransactionController::class);

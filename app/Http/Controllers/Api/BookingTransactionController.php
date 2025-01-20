@@ -9,10 +9,12 @@ use App\Http\Resources\Api\ViewBookingResource;
 use App\Models\BookingTransaction;
 use App\Models\OfficeSpace;
 use Illuminate\Http\Request;
+use Twilio\Rest\Client;
 
 class BookingTransactionController extends Controller
 {
-    public function booking_details(Request $request){
+    public function booking_details(Request $request)
+    {
         $request->validate([
             'phone_number' => 'required|string',
             'booking_trx_id' => 'required|string'
@@ -22,7 +24,7 @@ class BookingTransactionController extends Controller
             ->where('booking_trx_id', $request->booking_trx_id)
             ->with(['officeSpace', 'officeSpace.city'])
             ->first();
-        if(!$booking){
+        if (!$booking) {
             return response()->json(['message' => 'Booking not found'], 404);
         }
 
@@ -30,7 +32,8 @@ class BookingTransactionController extends Controller
     }
 
     //
-    public function store(StoreBookingTransactionRequest $request) {
+    public function store(StoreBookingTransactionRequest $request)
+    {
         $validatedData = $request->validated();
 
         $officeSpace = OfficeSpace::find($validatedData['office_space_id']);
@@ -39,9 +42,34 @@ class BookingTransactionController extends Controller
         $validatedData['booking_trx_id'] = BookingTransaction::generateUniqueTrxId();
         $validatedData['duration'] = $officeSpace->duration;
 
-        $validatedData['ended_at'] = (new \DateTime($validatedData['started_at']))->modify("+ ($officeSpace->duration) days")->format('Y-m-d');
+        $validatedData['ended_at'] = (new \DateTime($validatedData['started_at']))->modify("+{$officeSpace->duration} days")->format('Y-m-d');
 
         $bookingTransaction = BookingTransaction::create($validatedData);
+
+        $sid = getenv("TWILIO_ACCOUNT_SID");
+        $token = getenv("TWILIO_AUTH_TOKEN");
+        $twilio = new Client($sid, $token);
+
+        $messageBody = "Hi {$bookingTransaction->name}, Terima kasih telah booking kantor di RentOffice. \n\n";
+        $messageBody .= "Pesanan kantor {$bookingTransaction->officeSpace->name} Anda sedang kami proses dengan Booking TRX ID: {$bookingTransaction->booking_trx_id}.\n\n";
+        $messageBody .= "Kami akan menginformasikan kembali status pemesanan anda secepat mungkin.";
+
+        // $message = $twilio->messages->create(
+        //     "+6281218928508",
+        //     [
+        //         "body" => $messageBody,
+        //         "from" => getenv("TWILIO_PHONE_NUMBER")
+        //     ]
+        // );
+
+        $message = $twilio->messages
+            ->create(
+                "whatsapp:+6281218928508",
+                array(
+                    "from" => "whatsapp:+14155238886",
+                    "body" => $messageBody,
+                )
+            );
 
         $bookingTransaction->load('officeSpace');
         return new BookingTransactionResource($bookingTransaction);
